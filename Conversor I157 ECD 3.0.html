@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gerador de Registros I157 - SPED Contábil</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Ubuntu+Mono:wght@400;700&display=swap');
+        
+        * {
+            font-family: 'Ubuntu Mono', 'Courier New', monospace;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 25%, #404040 50%, #5a5a5a 75%, #c0c0c0 100%);
+            background-attachment: fixed;
+            padding: 20px;
+            color: #ffffff;
+        }
+
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #ffffff;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            color: #4a9eff;
+            margin-bottom: 20px;
+            font-weight: 400;
+            font-size: 1.5rem;
+        }
+
+        h3 {
+            color: #4a9eff;
+            margin-bottom: 15px;
+            font-weight: 400;
+            font-size: 1.2rem;
+        }
+
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .glass-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .upload-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-box {
+            flex: 1;
+            padding: 25px;
+            border: 2px solid rgba(74, 158, 255, 0.4);
+            border-radius: 15px;
+            text-align: center;
+            background: rgba(74, 158, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .upload-box:hover {
+            border-color: #66b3ff;
+            background: rgba(74, 158, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .upload-box h3 {
+            margin-bottom: 15px;
+            color: #4a9eff;
+        }
+
+        .file-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
+
+        input[type="file"] {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            color: #ffffff;
+            width: 100%;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]::-webkit-file-upload-button:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            transform: scale(1.05);
+        }
+
+        button {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        button:disabled {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            background: rgba(74, 158, 255, 0.2);
+            color: #4a9eff;
+            font-weight: 500;
+        }
+
+        tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        tr:hover {
+            background: rgba(74, 158, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        td[contenteditable="true"] {
+            cursor: text;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        td[contenteditable="true"]:hover {
+            border-color: rgba(74, 158, 255, 0.5);
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        td[contenteditable="true"]:focus {
+            outline: none;
+            border-color: #4a9eff;
+            background: rgba(74, 158, 255, 0.2);
+            box-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
+        }
+
+        #resultTable {
+            margin-top: 20px;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border-radius: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .result-container::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        .result-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .result-container::-webkit-scrollbar-thumb {
+            background: rgba(74, 158, 255, 0.6);
+            border-radius: 10px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+
+        .result-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(74, 158, 255, 0.8);
+        }
+
+        .result-container::-webkit-scrollbar-corner {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .alert {
+            padding: 20px;
+            background: rgba(248, 215, 218, 0.2);
+            color: #f8d7da;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(248, 215, 218, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .success {
+            background: rgba(212, 237, 218, 0.2);
+            color: #d4edda;
+            border: 1px solid rgba(212, 237, 218, 0.3);
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .dashboard-container {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        .stats-container {
+            flex: 1;
+        }
+
+        .stat-item {
+            background: rgba(74, 158, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(74, 158, 255, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+
+        .stat-label {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            padding: 15px;
+            background: rgba(74, 158, 255, 0.2);
+            border: none;
+            border-radius: 12px;
+            color: #4a9eff;
+            font-size: 1.2rem;
+            font-weight: 500;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .collapsible:hover {
+            background: rgba(74, 158, 255, 0.3);
+        }
+
+        .collapsible.active {
+            background: rgba(74, 158, 255, 0.4);
+        }
+
+        .collapsible:after {
+            content: '\002B';
+            color: #4a9eff;
+            font-weight: bold;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .collapsible.active:after {
+            content: "\2212";
+        }
+
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 12px 12px;
+        }
+
+        .content.active {
+            padding: 20px;
+            max-height: 1000px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .dashboard-container {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .chart-container {
+                width: 250px;
+                height: 250px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="main-container">
+<h1>Gerador de Registros I157 - SPED Contábil</h1>
+<div class="glass-container">
+<h2>Importação dos Arquivos SPED</h2>
+<div class="upload-container">
+<div class="upload-box">
+<h3>SPED Anterior</h3>
+<input accept=".txt" id="spedAnterior" type="file"/>
+<div class="file-info" id="infoAnterior">Nenhum arquivo selecionado</div>
+</div>
+<div class="upload-box">
+<h3>SPED Atual</h3>
+<input accept=".txt" id="spedAtual" type="file"/>
+<div class="file-info" id="infoAtual">Nenhum arquivo selecionado</div>
+</div>
+</div>
+<button id="processar">Processar Arquivos</button>
+</div>
+<div class="glass-container hidden" id="resultContainer">
+<h2>Dashboard de Resultados</h2>
+<div class="dashboard-container">
+<div class="chart-container">
+<canvas id="donutChart"></canvas>
+</div>
+<div class="stats-container">
+<div class="stat-item">
+<div class="stat-number" id="totalI157">0</div>
+<div class="stat-label">Registros I157 Gerados</div>
+</div>
+<div class="stat-item">
+<div class="stat-number" id="totalContas">0</div>
+<div class="stat-label">Total de Contas Processadas</div>
+</div>
+<div class="stat-item">
+<div class="stat-number" id="percentualSucesso">0%</div>
+<div class="stat-label">Taxa de Correspondência</div>
+</div>
+</div>
+</div>
+<button class="collapsible" id="i157ManualToggle">Analisar e preencher manualmente se necessário</button>
+<div class="content" id="i157ManualContent">
+<div class="result-container">
+<table id="i157ManualTable">
+<thead>
+<tr>
+<th>Selecionar</th>
+<th>Descrição da Conta</th>
+<th>Conta Anterior</th>
+<th>Conta Atual</th>
+<th>Saldo</th>
+<th>Natureza</th>
+</tr>
+</thead>
+<tbody id="i157ManualBody"></tbody>
+</table>
+</div>
+<div style="margin-top: 20px;">
+<button disabled="" id="adicionarManual">Adicionar Selecionados ao I157 Gerados</button>
+</div>
+</div>
+<button class="collapsible active" id="registrosToggle">Registros I157 Gerados</button>
+<div class="content active" id="registrosContent">
+<div class="result-container">
+                <table id="i157RecordsTable">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descrição da Conta</th>
+                            <th>Conta Anterior</th>
+                            <th>Conta Atual</th>
+                            <th>Valor</th>
+                            <th>Natureza</th>
+                        </tr>
+                    </thead>
+<tbody id="i157RecordsBody"></tbody>
+</table>
+</div>
+<div style="margin-top: 20px;">
+<button disabled="" id="exportar">Exportar Registros I157 (TXT ANSI)</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        // Variáveis para armazenar os dados processados
+        let i155Anterior = [];
+        let i155Atual = [];
+        let correspondencias = [];
+        let registrosI157 = [];
+        let i155NaoCorrespondidos = []; // Nova variável para I155 não correspondidos
+        let i050Anterior = []; // Nova variável para registros I050 do arquivo anterior
+        let i050Atual = []; // Nova variável para registros I050 do arquivo atual
+        let mapaDescricoes = new Map(); // Mapeamento código → descrição
+        let donutChart = null;
+        
+        // Event listeners para os inputs de arquivo
+        document.getElementById('spedAnterior').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Nenhum arquivo selecionado';
+            document.getElementById('infoAnterior').textContent = fileName;
+        });
+        
+        document.getElementById('spedAtual').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name || 'Nenhum arquivo selecionado';
+            document.getElementById('infoAtual').textContent = fileName;
+        });
+
+        // Event listeners para os botões colapsáveis
+        document.getElementById("i157ManualToggle").addEventListener("click", function() {
+            toggleCollapsible("i157ManualToggle", "i157ManualContent");
+        });
+
+        document.getElementById('registrosToggle').addEventListener('click', function() {
+            toggleCollapsible('registrosToggle', 'registrosContent');
+        });
+
+        function toggleCollapsible(buttonId, contentId) {
+            const button = document.getElementById(buttonId);
+            const content = document.getElementById(contentId);
+            
+            button.classList.toggle('active');
+            content.classList.toggle('active');
+        }
+
+        // Event listener para o botão de adicionar manual
+        document.getElementById('adicionarManual').addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('#i157ManualTable .manual-checkbox:checked');
+            
+            if (checkboxes.length === 0) {
+                alert('Por favor, selecione pelo menos um registro para adicionar!');
+                return;
+            }
+
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                const cells = row.querySelectorAll('td');
+                
+                const contaAnterior = cells[2].textContent;
+                const contaAtual = cells[3].textContent.trim();
+                const saldo = cells[4].textContent;
+                const natureza = cells[5].textContent;
+
+                if (contaAtual === '') {
+                    alert(`Por favor, preencha a conta atual para o registro ${contaAnterior}!`);
+                    return;
+                }
+
+                // Verificar se já existe um registro I157 com a mesma conta atual E conta anterior
+                const registroExistente = registrosI157.find(registro => {
+                    const campos = registro.split('|');
+                    return campos.length >= 4 && campos[2] === contaAtual && campos[3] === contaAnterior;
+                });
+
+                if (registroExistente) {
+                    // Se existe, somar os valores
+                    const indiceRegistro = registrosI157.indexOf(registroExistente);
+                    const campos = registroExistente.split('|');
+                    
+                    // Converter valores para número, somar e converter de volta
+                    const valorExistente = parseFloat(campos[4].replace(',', '.'));
+                    const novoValor = parseFloat(saldo.replace(',', '.'));
+                    const valorSomado = valorExistente + novoValor;
+                    
+                    // Atualizar o registro existente com o valor somado
+                    campos[4] = valorSomado.toFixed(2).replace('.', ',');
+                    registrosI157[indiceRegistro] = campos.join('|');
+                    
+                    console.log(`Valor somado para conta atual ${contaAtual} e anterior ${contaAnterior}: ${valorExistente} + ${novoValor} = ${valorSomado}`);
+                } else {
+                    // Se não existe, criar novo registro I157
+                    const registroI157 = `|I157|${contaAtual}|${contaAnterior}|${saldo}|${natureza}|`;
+                    registrosI157.push(registroI157);
+                    
+                    console.log(`Novo registro I157 criado para conta atual ${contaAtual} e anterior ${contaAnterior}`);
+                }
+                
+                // Remover da lista de não correspondidos
+                i155NaoCorrespondidos = i155NaoCorrespondidos.filter(conta => conta.codigo !== contaAnterior);
+                
+                // Remover a linha da tabela
+                row.remove();
+            });
+
+            // Atualizar a exibição dos registros I157
+            exibirResultados();
+            
+            // Atualizar dashboard
+            atualizarDashboard();
+
+            alert(`${checkboxes.length} registro(s) processado(s) com sucesso!`);
+        });
+        
+        // Event listener para o botão de processar
+        document.getElementById('processar').addEventListener('click', async function() {
+            const fileAnterior = document.getElementById('spedAnterior').files[0];
+            const fileAtual = document.getElementById('spedAtual').files[0];
+            
+            if (!fileAnterior || !fileAtual) {
+                alert('Por favor, selecione os dois arquivos SPED!');
+                return;
+            }
+            
+            try {
+                // Limpar resultados anteriores
+                correspondencias = [];
+                registrosI157 = [];
+                i155NaoCorrespondidos = []; // Limpar também os não correspondidos
+                i050Anterior = []; // Limpar registros I050 anteriores
+                i050Atual = []; // Limpar registros I050 atuais
+                mapaDescricoes.clear(); // Limpar mapeamento de descrições
+                document.getElementById("i157RecordsBody").innerHTML = "";
+                document.getElementById("i157ManualBody").innerHTML = ""; // Limpar o corpo da tabela manual
+                
+                // Processar os arquivos
+                const contentAnterior = await fileAnterior.text();
+                const contentAtual = await fileAtual.text();
+                
+                // Extrair registros I050 e I155
+                i050Anterior = extrairRegistrosI050(contentAnterior);
+                i050Atual = extrairRegistrosI050(contentAtual);
+                i155Anterior = extrairRegistrosI155(contentAnterior);
+                i155Atual = extrairRegistrosI155(contentAtual);
+                
+                // Criar mapeamento de descrições
+                criarMapaDescricoes();
+                
+                // Encontrar correspondências
+                encontrarCorrespondencias();
+                
+                // Gerar registros I157
+                gerarRegistrosI157();
+                
+                // Exibir resultados
+                exibirResultados();
+                
+                // Atualizar dashboard
+                atualizarDashboard();
+                
+                // Mostrar container de resultados
+                document.getElementById("resultContainer").classList.remove("hidden");
+                document.getElementById("exportar").disabled = false;
+                document.getElementById("adicionarManual").disabled = false; // Habilitar botão de adicionar manual
+                
+            } catch (error) {
+                console.error('Erro ao processar arquivos:', error);
+                alert('Ocorreu um erro ao processar os arquivos. Verifique o console para mais detalhes.');
+            }
+        });
+        
+        // Event listener para o botão de exportar
+        document.getElementById('exportar').addEventListener('click', function() {
+            if (registrosI157.length === 0) {
+                alert('Não há registros I157 para exportar!');
+                return;
+            }
+            
+            // Gerar o conteúdo do arquivo no novo formato
+            let content = 'ID;;;;;;\r\n'; // Primeira linha conforme especificado
+            
+            // Processar cada registro I157 para o novo formato
+            registrosI157.forEach(registro => {
+                // Extrair dados do registro I157 (formato: |I157|contaAtual|contaAnterior|saldo|natureza|)
+                const campos = registro.split('|');
+                if (campos.length >= 6) {
+                    const contaAtual = campos[2];
+                    const contaAnterior = campos[3];
+                    const saldo = campos[4];
+                    const natureza = campos[5];
+                    
+                    // Buscar a classificação da conta anterior nos registros I050
+                    let classificacaoAnterior = '';
+                    const i050Encontrado = i050Anterior.find(i050 => i050.codigo === contaAnterior);
+                    if (i050Encontrado) {
+                        classificacaoAnterior = i050Encontrado.classificacao || '';
+                    }
+                    
+                    // Formato: Tipo;Código da conta atual;Código da conta anterior;Classificação da conta anterior;Saldo;Natureza;Centro de custo
+                    const linha = `C;${contaAtual};${contaAnterior};${classificacaoAnterior};${saldo};${natureza};\r\n`;
+                    content += linha;
+                }
+            });
+            
+            // Criar um Blob com o conteúdo
+            const blob = new Blob([content], { type: 'text/plain;charset=windows-1252' });
+            
+            // Criar um link para download
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'registros_I157.txt';
+            
+            // Simular clique para iniciar download
+            a.click();
+            
+            // Liberar URL
+            URL.revokeObjectURL(a.href);
+        });
+
+        // Função para atualizar o dashboard
+        function atualizarDashboard() {
+            const totalContas = i155Atual.filter(conta => conta.saldoInicial !== 0).length;
+            const totalI157 = registrosI157.length;
+            const percentualSucesso = totalContas > 0 ? Math.round((totalI157 / totalContas) * 100) : 0;
+
+            document.getElementById('totalI157').textContent = totalI157;
+            document.getElementById('totalContas').textContent = totalContas;
+            document.getElementById('percentualSucesso').textContent = percentualSucesso + '%';
+
+            // Criar ou atualizar o gráfico donut
+            criarGraficoDonut(totalI157, totalContas - totalI157);
+        }
+
+        // Função para criar o gráfico donut
+        function criarGraficoDonut(i157Gerados, contasSemCorrespondencia) {
+            const ctx = document.getElementById('donutChart').getContext('2d');
+            
+            if (donutChart) {
+                donutChart.destroy();
+            }
+
+            donutChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['I157 Gerados', 'Sem Correspondência'],
+                    datasets: [{
+                        data: [i157Gerados, contasSemCorrespondencia],
+                        backgroundColor: [
+                            'rgba(74, 158, 255, 0.8)',
+                            'rgba(128, 128, 128, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(74, 158, 255, 1)',
+                            'rgba(128, 128, 128, 0.8)'
+                        ],
+                        borderWidth: 3,
+                        cutout: '65%',
+                        spacing: 8,
+                        borderRadius: 6,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                padding: 25,
+                                font: {
+                                    family: 'Ubuntu Mono',
+                                    size: 14,
+                                    weight: '700'
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: 'rgba(74, 158, 255, 0.5)',
+                            borderWidth: 2,
+                            cornerRadius: 10,
+                            titleFont: {
+                                family: 'Ubuntu Mono',
+                                size: 14,
+                                weight: '700'
+                            },
+                            bodyFont: {
+                                family: 'Ubuntu Mono',
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        arc: {
+                            borderWidth: 3
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
+        // Função para extrair registros I050 de um arquivo SPED
+        function extrairRegistrosI050(conteudo) {
+            const linhas = conteudo.split(/\r?\n/);
+            const registros = [];
+            
+            for (const linha of linhas) {
+                if (linha.startsWith('|I050|') || linha.startsWith('|C050|')) {
+                    const campos = linha.split('|');
+                    if (campos.length >= 9) { // Verificar se tem pelo menos 9 campos para acessar o campo 8
+                        registros.push({
+                            codigo: campos[6], // Campo 6 contém o código da conta
+                            descricao: campos[8] // Campo 8 contém a descrição da conta
+                        });
+                    }
+                }
+            }
+            
+            return registros;
+        }
+        
+        // Função para criar mapeamento de códigos para descrições
+        function criarMapaDescricoes() {
+            mapaDescricoes.clear();
+            
+            // Adicionar APENAS descrições do arquivo anterior (I050 anterior)
+            for (const conta of i050Anterior) {
+                mapaDescricoes.set(conta.codigo, conta.descricao);
+            }
+            
+            // NÃO adicionar descrições do arquivo atual para manter apenas as do anterior
+        }
+        
+        // Função para extrair registros I155 de um arquivo SPED
+        function extrairRegistrosI155(conteudo) {
+            const linhas = conteudo.split(/\r?\n/);
+            const registros = [];
+            
+            for (const linha of linhas) {
+                if (linha.startsWith('|I155|') || linha.startsWith('|C155|')) {
+                    const campos = linha.split('|');
+                    if (campos.length >= 10) {
+                        registros.push({
+                            codigo: campos[2],
+                            saldoInicial: parseFloat(campos[4].replace(',', '.')),
+                            naturezaInicial: campos[5],
+                            debito: parseFloat(campos[6].replace(',', '.')),
+                            credito: parseFloat(campos[7].replace(',', '.')),
+                            saldoFinal: parseFloat(campos[8].replace(',', '.')),
+                            naturezaFinal: campos[9]
+                        });
+                    }
+                }
+            }
+            
+            return registros;
+        }
+        
+        // Função para encontrar correspondências entre registros I155
+        function encontrarCorrespondencias() {
+            // Mapeamento de saldos finais do ano anterior para códigos de conta
+            const mapaAnterior = new Map();
+            
+            // Populando o mapa com contas do arquivo anterior (ignorando saldos zero)
+            for (const conta of i155Anterior) {
+                if (conta.saldoFinal !== 0) {
+                    // Chave composta: saldo + natureza
+                    const chave = `${conta.saldoFinal.toFixed(2)}_${conta.naturezaFinal}`;
+                    
+                    if (!mapaAnterior.has(chave)) {
+                        mapaAnterior.set(chave, []);
+                    }
+                    
+                    mapaAnterior.get(chave).push(conta.codigo);
+                }
+            }
+            
+            // Encontrando correspondências com as contas do arquivo atual
+            for (const contaAtual of i155Atual) {
+                // Ignorar contas com saldo inicial zero
+                if (contaAtual.saldoInicial === 0) continue;
+                
+                const chave = `${contaAtual.saldoInicial.toFixed(2)}_${contaAtual.naturezaInicial}`;
+                
+                if (mapaAnterior.has(chave)) {
+                    const codigosAnteriores = mapaAnterior.get(chave);
+                    
+                    // Se houver exatamente uma correspondência, registramos
+                    if (codigosAnteriores.length === 1) {
+                        correspondencias.push({
+                            codigoAtual: contaAtual.codigo,
+                            codigoAnterior: codigosAnteriores[0],
+                            saldo: contaAtual.saldoInicial,
+                            natureza: contaAtual.naturezaInicial
+                        });
+                    }
+                }
+            }
+            
+            // Verificar contas do arquivo anterior que não foram correspondidas
+            const codigosCorrespondidos = new Set(correspondencias.map(c => c.codigoAnterior));
+            
+            for (const contaAnterior of i155Anterior) {
+                if (contaAnterior.saldoFinal !== 0 && !codigosCorrespondidos.has(contaAnterior.codigo)) {
+                    // Buscar descrição da conta no mapeamento
+                    const descricao = mapaDescricoes.get(contaAnterior.codigo) || 'Descrição não encontrada';
+                    
+                    i155NaoCorrespondidos.push({
+                        tipo: 'anterior',
+                        codigo: contaAnterior.codigo,
+                        descricao: descricao, // Adicionar descrição real
+                        saldo: contaAnterior.saldoFinal,
+                        natureza: contaAnterior.naturezaFinal
+                    });
+                }
+            }
+            
+            // Exibir as contas não correspondidas no novo quadro I157 Manual
+            exibirI157Manual();
+        }
+        
+        // Função para gerar registros I157 - MODIFICADA COM A NOVA REGRA
+        function gerarRegistrosI157() {
+            registrosI157 = [];
+            
+            for (const corr of correspondencias) {
+                // NOVA REGRA: Só gera I157 se o código anterior for diferente do código atual
+                if (corr.codigoAnterior !== corr.codigoAtual) {
+                    const valor = corr.saldo.toFixed(2).replace('.', ',');
+                    // Formato: Identificador;código da conta atual; código da conta anterior; valor; natureza
+                    const registro = `|I157|${corr.codigoAtual}|${corr.codigoAnterior}|${valor}|${corr.natureza}|`;
+                    registrosI157.push(registro);
+                }
+            }
+        }
+        
+        // Função para exibir os resultados na tabela
+        function exibirResultados() {
+            const i157RecordsBody = document.getElementById("i157RecordsBody");
+            i157RecordsBody.innerHTML = ""; // Limpar antes de preencher
+
+            registrosI157.forEach(registro => {
+                const tr = document.createElement("tr");
+                const campos = registro.split("|");
+                
+                // Buscar descrição da conta anterior no mapeamento
+                const descricao = mapaDescricoes.get(campos[3]) || 'Descrição não encontrada';
+                
+                tr.innerHTML = `
+                    <td>${campos[1].replace("|", "")}</td>
+                    <td>${descricao}</td>
+                    <td>${campos[3]}</td>
+                    <td contenteditable="true">${campos[2]}</td>
+                    <td>${campos[4]}</td>
+                    <td>${campos[5].replace("|", "")}</td>
+                `;
+                i157RecordsBody.appendChild(tr);
+            });
+        }
+
+        // Função para exibir as contas I155 não correspondidas no quadro I157 Manual
+        function exibirI157Manual() {
+            const i157ManualBody = document.getElementById("i157ManualBody");
+            i157ManualBody.innerHTML = ""; // Limpar antes de preencher
+
+            i155NaoCorrespondidos.forEach(conta => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><input type="checkbox" class="manual-checkbox"></td>
+                    <td>${conta.descricao}</td>
+                    <td>${conta.codigo}</td>
+                    <td contenteditable="true"></td>
+                    <td>${conta.saldo.toFixed(2).replace(".", ",")}</td>
+                    <td>${conta.natureza}</td>
+                `;
+                i157ManualBody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
+
